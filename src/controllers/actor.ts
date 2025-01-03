@@ -4,6 +4,13 @@ import { Op } from "sequelize";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from "../lib";
 import { NotFoundError } from "../errors/not-found-error";
 
+const ALLOWED_SORT_COLUMNS = [
+  "actor_id",
+  "first_name",
+  "last_name",
+  "last_update",
+];
+
 /**
  * Retrieves all actors from the database and sends them in the response.
  *
@@ -15,14 +22,6 @@ import { NotFoundError } from "../errors/not-found-error";
  *
  * @throws Passes any errors to the next middleware function.
  */
-
-const ALLOWED_SORT_COLUMNS = [
-  "actor_id",
-  "first_name",
-  "last_name",
-  "last_update",
-];
-
 export const getActors = async (
   req: Request,
   res: Response,
@@ -110,20 +109,98 @@ export const getActor = async (
   }
 };
 
+/**
+ * Creates a new actor and sends it in the response.
+ *
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function in the stack.
+ *
+ * @returns A JSON response containing the new actor.
+ *
+ * @throws Passes any errors to the next middleware function.
+ */
 export const createActor = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  try {
+    const { first_name, last_name } = req.body;
+    const actor = await Actor.create({ first_name, last_name });
 
+    res.status(201).json(actor);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Updates an existing actor and sends it in the response.
+ *
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function in the stack.
+ *
+ * @returns A JSON response containing the updated actor.
+ *
+ * @throws Passes any errors to the next middleware function.
+ */
 export const updateActor = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  try {
+    const actorId = req.params.id;
+    const { first_name, last_name } = req.body;
+
+    const actor = await Actor.findByPk(actorId);
+
+    if (!actor) {
+      throw new NotFoundError("Actor not found");
+    }
+
+    actor.first_name = first_name;
+    actor.last_name = last_name;
+
+    await actor.save();
+
+    res.status(200).json(actor);
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Deletes an existing actor and sends a 204 response.
+ *
+ * @param req - The request object.
+ * @param res - The response object.
+ * @param next - The next middleware function in the stack.
+ *
+ * @returns A 204 response.
+ *
+ * @throws Passes any errors to the next middleware function.
+ */
 
 export const deleteActor = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {};
+) => {
+  try {
+    const actorId = req.params.id;
+    const actor = await Actor.findByPk(actorId);
+
+    if (!actor) {
+      throw new NotFoundError("Actor not found");
+    }
+
+    await actor.destroy();
+
+    res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
