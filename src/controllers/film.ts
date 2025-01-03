@@ -1,28 +1,38 @@
 import { Request, Response, NextFunction } from "express";
-import { Actor } from "../models/actor";
-import { Op } from "sequelize";
+import { Film } from "../models/film";
 import { DEFAULT_LIMIT, DEFAULT_PAGE, MAX_LIMIT } from "../lib";
+import { Op } from "sequelize";
 import { NotFoundError } from "../errors/not-found-error";
+import { Language } from "../models/language";
 
 const ALLOWED_SORT_COLUMNS = [
-  "actor_id",
-  "first_name",
-  "last_name",
+  "film_id",
+  "title",
+  "description",
+  "release_year",
+  "language_id",
+  "rental_duration",
+  "rental_rate",
+  "length",
+  "replacement_cost",
+  "rating",
   "last_update",
+  "special_features",
+  "fulltext",
 ];
 
 /**
- * Retrieves all actors from the database and sends them in the response.
+ * Retrieves all films from the database and sends them in the response.
  *
  * @param req - The request object.
  * @param res - The response object.
  * @param next - The next middleware function in the stack.
  *
- * @returns A JSON response containing the list of actors.
+ * @returns A JSON response containing the list of films.
  *
  * @throws Passes any errors to the next middleware function.
  */
-export const getActors = async (
+export const getFilms = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -42,18 +52,17 @@ export const getActors = async (
     // Sorting: Ensure the column is allowed for sorting
     const sort = ALLOWED_SORT_COLUMNS.includes(query.sort || "")
       ? query.sort
-      : "actor_id";
+      : "film_id";
     const order = query.order === "DESC" ? "DESC" : "ASC";
 
     // Search: Ensure search string is sanitized (we use iLike for case-insensitive matching)
     const search = query.search || "";
 
     // Prepare query conditions
-    const where: any = search
-      ? { first_name: { [Op.iLike]: `%${search}%` } }
-      : {};
+    const where: any = search ? { title: { [Op.iLike]: `%${search}%` } } : {};
 
-    const actors = await Actor.findAll({
+    // Retrieve all films from the database
+    const films = await Film.findAll({
       where,
       limit,
       offset: (page - 1) * limit,
@@ -61,23 +70,27 @@ export const getActors = async (
       attributes: ALLOWED_SORT_COLUMNS,
       include: [
         {
-          association: Actor.associations.films,
-          attributes: ["title", "release_year", "rating", "special_features"],
+          association: Film.associations.language,
+          attributes: ["name"],
+        },
+        {
+          association: Film.associations.actors,
+          attributes: ["first_name", "last_name"],
           through: { attributes: [] },
         },
       ],
     });
 
-    // Get total count for pagination info (optional)
-    const totalActors = await Actor.count({ where });
+    // Return the total number of films
+    const totalFilms = await Film.count({ where });
 
     res.status(200).json({
-      data: actors,
+      data: films,
       pagination: {
-        total: totalActors,
+        total: totalFilms,
         page,
         limit,
-        totalPages: Math.ceil(totalActors / limit),
+        totalPages: Math.ceil(totalFilms / limit),
       },
     });
   } catch (error) {
@@ -86,127 +99,117 @@ export const getActors = async (
 };
 
 /**
- * Retrieves a single actor from the database and sends it in the response.
+ * Retrieves a film by ID from the database and sends it in the response.
  *
  * @param req - The request object.
  * @param res - The response object.
  * @param next - The next middleware function in the stack.
  *
- * @returns A JSON response containing the actor.
+ * @returns A JSON response containing the film.
  *
  * @throws Passes any errors to the next middleware function.
  */
-
-export const getActor = async (
+export const getFilmById = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const actorId = req.params.id;
-    const actor = await Actor.findByPk(actorId);
+    const film = await Film.findByPk(req.params.id);
 
-    if (!actor) {
-      throw new NotFoundError("Actor not found");
+    if (!film) {
+      throw new NotFoundError("Film not found");
     }
 
-    res.status(200).json(actor);
+    res.status(200).json(film);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Creates a new actor and sends it in the response.
+ * Creates a new film in the database and sends it in the response.
  *
  * @param req - The request object.
  * @param res - The response object.
  * @param next - The next middleware function in the stack.
  *
- * @returns A JSON response containing the new actor.
+ * @returns A JSON response containing the created film.
  *
  * @throws Passes any errors to the next middleware function.
  */
-export const createActor = async (
+export const createFilm = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const { first_name, last_name } = req.body;
-    const actor = await Actor.create({ first_name, last_name });
-
-    res.status(201).json(actor);
+    const film = await Film.create(req.body);
+    res.status(201).json(film);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Updates an existing actor and sends it in the response.
+ * Updates an existing film by ID in the database and sends it in the response.
  *
  * @param req - The request object.
  * @param res - The response object.
  * @param next - The next middleware function in the stack.
  *
- * @returns A JSON response containing the updated actor.
+ * @returns A JSON response containing the updated film.
  *
  * @throws Passes any errors to the next middleware function.
  */
-export const updateActor = async (
+export const updateFilm = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const actorId = req.params.id;
-    const { first_name, last_name } = req.body;
+    const filmId = req.params.id;
+    const film = await Film.findByPk(filmId);
 
-    const actor = await Actor.findByPk(actorId);
-
-    if (!actor) {
-      throw new NotFoundError("Actor not found");
+    if (!film) {
+      throw new NotFoundError("Film not found");
     }
 
-    actor.first_name = first_name;
-    actor.last_name = last_name;
+    await film.update(req.body);
 
-    await actor.save();
-
-    res.status(200).json(actor);
+    res.status(200).json(film);
   } catch (error) {
     next(error);
   }
 };
 
 /**
- * Deletes an existing actor and sends a 204 response.
+ * Deletes a film by ID from the database and sends a message in the response.
  *
  * @param req - The request object.
  * @param res - The response object.
  * @param next - The next middleware function in the stack.
  *
- * @returns A 204 response.
+ * @returns A JSON response containing a message indicating the film was deleted.
  *
  * @throws Passes any errors to the next middleware function.
  */
-
-export const deleteActor = async (
+export const deleteFilm = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   try {
-    const actorId = req.params.id;
-    const actor = await Actor.findByPk(actorId);
+    const filmId = req.params.id;
+    const film = await Film.findByPk(filmId);
 
-    if (!actor) {
-      throw new NotFoundError("Actor not found");
+    if (!film) {
+      throw new NotFoundError("Film not found");
     }
 
-    await actor.destroy();
+    await film.destroy();
 
-    res.status(200).send({ actor_id: actorId });
+    res.status(200).json({ film_id: filmId, message: "Film deleted" });
   } catch (error) {
     next(error);
   }
