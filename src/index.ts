@@ -6,6 +6,7 @@ import pkg from "../package.json";
 import { sequelize } from "./models";
 import { Actor } from "./models/actor";
 import { actorRoute } from "./routes/actor";
+import { errorHandler } from "./middleware/error-handler";
 
 // Create a new express application instance
 const app = express();
@@ -29,6 +30,8 @@ app.get("/api", (req, res, next) => {
   });
 });
 app.use("/api/v1/actor", actorRoute);
+
+app.use(errorHandler);
 
 // The port the express app will listen on
 (async () => {
