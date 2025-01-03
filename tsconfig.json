@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES5",
+    "module": "commonjs",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "declaration": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "declarationDir": "./dist/types",
+    "resolveJsonModule": true,
+    "typeRoots": ["./node_modules/@types", "./@types"],
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/index.d.ts"],
+  "exclude": ["node_modules"]
+}
