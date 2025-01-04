@@ -15,11 +15,13 @@ export const staffLogin = async (
 ) => {
   try {
     const { username, password } = req.body;
+
     const staff = await Staff.findOne({
       where: {
         [Op.or]: [{ username }, { email: username }],
       },
     });
+
     if (!staff) {
       throw new NotFoundError("Staff not found");
     }
@@ -43,10 +45,11 @@ export const staffLogin = async (
       }
     );
 
+    let { password: p, ...restStaff } = staff.toJSON();
     res.status(200).json({
       accessToken: token,
       expiresIn: today,
-      staff,
+      staff: restStaff,
     });
   } catch (error) {
     next(error);
