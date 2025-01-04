@@ -23,6 +23,9 @@ import { Actor } from "./actor";
 import { Film } from "./film";
 import { Language } from "./language";
 import { FilmActor } from "./film-actor";
+import { Store } from "./store";
+import { Address } from "./address";
+import { Staff } from "./staff";
 
 Film.belongsToMany(Actor, { through: FilmActor, foreignKey: "film_id" });
 Actor.belongsToMany(Film, { through: FilmActor, foreignKey: "actor_id" });
@@ -30,4 +33,13 @@ Actor.belongsToMany(Film, { through: FilmActor, foreignKey: "actor_id" });
 Language.hasMany(Film, { foreignKey: "language_id" });
 Film.belongsTo(Language, { foreignKey: "language_id" });
 
-export { sequelize, Actor, Film, Language, FilmActor };
+// Address.hasMany(Store,{foreignKey:''})
+Store.hasOne(Address, { foreignKey: "address_id" });
+Address.belongsTo(Store, { foreignKey: "address_id" });
+
+// staff
+Staff.hasOne(Store, { foreignKey: "manager_staff_id" });
+Staff.hasOne(Address, { foreignKey: "address_id" });
+Store.belongsTo(Address, { foreignKey: "address_id" });
+Store.belongsTo(Staff, { foreignKey: "manager_staff_id" });
+export { sequelize, Actor, Film, Language, FilmActor, Store, Address, Staff };

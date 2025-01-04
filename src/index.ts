@@ -4,10 +4,12 @@ import path from "path";
 import morgan from "morgan";
 import pkg from "../package.json";
 import { sequelize } from "./models";
-import { Actor } from "./models/actor";
 import { actorRoute } from "./routes/actor";
 import { errorHandler } from "./middleware/error-handler";
 import { filmRoute } from "./routes/film";
+import { storeRoute } from "./routes/store";
+import { addressRoute } from "./routes/address";
+import { staffRoute } from "./routes/staff";
 
 // Create a new express application instance
 const app = express();
@@ -32,6 +34,9 @@ app.get("/api", (req, res, next) => {
 });
 app.use("/api/v1/actor", actorRoute);
 app.use("/api/v1/film", filmRoute);
+app.use("/api/v1/store", storeRoute);
+app.use("/api/v1/address", addressRoute);
+app.use("/api/v1/staff", staffRoute);
 
 app.use(errorHandler);
 
