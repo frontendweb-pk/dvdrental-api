@@ -10,6 +10,7 @@ import { filmRoute } from "./routes/film";
 import { storeRoute } from "./routes/store";
 import { addressRoute } from "./routes/address";
 import { staffRoute } from "./routes/staff";
+import { categoryRouter } from "./routes/category";
 
 // Create a new express application instance
 const app = express();
@@ -37,6 +38,7 @@ app.use("/api/v1/film", filmRoute);
 app.use("/api/v1/store", storeRoute);
 app.use("/api/v1/address", addressRoute);
 app.use("/api/v1/staff", staffRoute);
+app.use("/api/v1/category", categoryRouter);
 
 app.use(errorHandler);
 

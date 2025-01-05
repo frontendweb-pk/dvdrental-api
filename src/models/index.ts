@@ -26,6 +26,21 @@ import { FilmActor } from "./film-actor";
 import { Store } from "./store";
 import { Address } from "./address";
 import { Staff } from "./staff";
+import { Category } from "./category";
+import { FilmCategory } from "./film-category";
+import { Inventory } from "./inventory";
+import { Customer } from "./customer";
+import { Payment } from "./payment";
+import { Rental } from "./rental";
+import { Country } from "./country";
+import { City } from "./city";
+
+// category
+Category.belongsToMany(Film, {
+  through: FilmCategory,
+  foreignKey: "category_id",
+});
+Film.belongsToMany(Category, { through: FilmCategory, foreignKey: "film_id" });
 
 Film.belongsToMany(Actor, { through: FilmActor, foreignKey: "film_id" });
 Actor.belongsToMany(Film, { through: FilmActor, foreignKey: "actor_id" });
@@ -42,4 +57,27 @@ Staff.hasOne(Store, { foreignKey: "manager_staff_id" });
 Staff.hasOne(Address, { foreignKey: "address_id" });
 Store.belongsTo(Address, { foreignKey: "address_id" });
 Store.belongsTo(Staff, { foreignKey: "manager_staff_id" });
-export { sequelize, Actor, Film, Language, FilmActor, Store, Address, Staff };
+
+// const db: { [key: string]: object } = {};
+
+// db.Category = Category;
+
+// export default db;
+export {
+  sequelize,
+  Category,
+  City,
+  Country,
+  Customer,
+  FilmCategory,
+  Inventory,
+  Payment,
+  Rental,
+  Actor,
+  Film,
+  Language,
+  FilmActor,
+  Store,
+  Address,
+  Staff,
+};
