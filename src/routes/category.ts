@@ -17,6 +17,7 @@ route.post(
   requestValidator,
   createCategory
 );
+
 route.put(
   "/:categoryId",
   [param("categoryId").isInt().notEmpty(), body("name").isString().notEmpty()],
@@ -25,7 +26,7 @@ route.put(
 );
 
 route.delete(
-  ":/categoryId",
+  "/:categoryId",
   [param("categoryId").isInt().notEmpty()],
   requestValidator,
   deleteCategory

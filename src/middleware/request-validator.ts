@@ -11,4 +11,5 @@ export const requestValidator = (
   if (!array.isEmpty()) {
     throw new RequestValidationError(array.array());
   }
+  next();
 };
